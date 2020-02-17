@@ -25,9 +25,9 @@ class NN:
 		self.hidden_layer_1 = np.zeros(16, np.float32)
 		self.hidden_layer_2 = np.zeros(16, np.float32)
 		# activation bias to change the tendency of a neuron to fire
-		self.activation_bias_layer1 = np.random.random(16)*np.random.randint(0, 50)
-		self.activation_bias_layer2 = np.random.random(16) * np.random.randint(0, 50)
-		self.activation_bias_layer3 = np.random.random(10) * np.random.randint(0, 50)
+		self.activation_bias_layer1 = np.random.random(16)*np.random.randint(0, 5)
+		self.activation_bias_layer2 = np.random.random(16) * np.random.randint(0, 5)
+		self.activation_bias_layer3 = np.random.random(10) * np.random.randint(0, 5)
 		# 10 output layer neurons representing digits 0 - 9
 		self.out_layer = np.zeros(10, np.float32)
 
@@ -61,19 +61,21 @@ class NN:
 
 	# begins training, gradient decent, and back propagation
 	def train(self):
+		self.load_images(True, 60000)
 		# for i in range(self.image_data.shape[0]):
-		for i in range(10):
-
+		for i in range(self.image_data.shape[0]):
+			curr_im = self.image_data[i]
 			l0 = self.image_data[i].flatten()
 			self.hidden_layer_1 = self.sigmoid(np.dot(l0, self.synapses1) + self.activation_bias_layer1)
 			self.hidden_layer_2 = self.sigmoid(np.dot(self.hidden_layer_1, self.synapses2) + self.activation_bias_layer2)
 			self.out_layer = self.sigmoid(np.dot(self.hidden_layer_2, self.synapses3) + self.activation_bias_layer3)
 
-			output_error = self.make_correct_output(i) - self.out_layer
+			correct = self.make_correct_output(i)
+			output_error = correct - self.out_layer
 			output_delta = output_error * self.sigmoid(self.out_layer, True)
 
 			if (i % 100) == 0:
-				print(f"%Error: {np.mean(np.abs(output_error))}")
+				print(f"%Error: {np.mean(np.abs(output_error))} {i} of {self.image_data.shape[0]}")
 
 			hidden2_error = output_delta.dot(self.synapses3.T)
 			hidden2_delta = hidden2_error * self.sigmoid(self.hidden_layer_2, True)
@@ -82,13 +84,28 @@ class NN:
 			hidden1_delta = hidden1_error * self.sigmoid(self.hidden_layer_1, True)
 
 			# update weights
+			self.synapses1 += self.hidden_layer_1.T.dot(hidden1_delta)
+			self.synapses2 += self.hidden_layer_2.T.dot(hidden2_delta)
+			self.synapses3 += self.out_layer.T.dot(output_delta)
 
+			# update biases (subtracting to reduce the
+			self.activation_bias_layer1 += self.hidden_layer_1.T.dot(hidden1_delta)
+			self.activation_bias_layer2 += self.hidden_layer_2.T.dot(hidden2_delta)
+			self.activation_bias_layer3 += self.out_layer.T.dot(output_delta)
 
+	def test(self, num_images: int):
+		self.load_images(False, num_images)
+		for i in range(num_images):
+			curr_im = self.image_data[i]
+			l0 = self.image_data[i].flatten()
+			self.hidden_layer_1 = self.sigmoid(np.dot(l0, self.synapses1) + self.activation_bias_layer1)
+			self.hidden_layer_2 = self.sigmoid(
+				np.dot(self.hidden_layer_1, self.synapses2) + self.activation_bias_layer2)
+			self.out_layer = self.sigmoid(np.dot(self.hidden_layer_2, self.synapses3) + self.activation_bias_layer3)
 
-
-
-
+			print(f"test {i}: real answer -> {self.images_labels[i]}, guess -> {np.argmax(self.out_layer)}")
 
 
 nn = NN(784)
 nn.train()
+nn.test(50)

@@ -49,11 +49,6 @@ def read_images(training=True, num_of_images=None):
 		print(labels)
 		labels = labels.reshape(-1, 1)
 
-	'''
-	The images in the array \'images\' has one extra dimension than is necessary.
-	For convenience, lets use the squeeze function
-	'''
-
 	return images, labels
 
 
@@ -63,5 +58,5 @@ def visualize_images(images, labels):
 		plt.imshow(im)
 		plt.text(2.5, .5, labels[i], ha='center', )
 		plt.show()
-		i +=1
+		i += 1
 
