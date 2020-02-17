@@ -1,5 +1,5 @@
 import numpy as np
-from main import read_images
+from main import read_images, visualize_images
 
 '''
 Input array is 28x28=784
@@ -96,7 +96,7 @@ class NN:
 	def test(self, num_images: int):
 		self.load_images(False, num_images)
 		for i in range(num_images):
-			curr_im = self.image_data[i]
+			# visualize_images(self.image_data[i:i+1], self.images_labels[i:i+1])
 			l0 = self.image_data[i].flatten()
 			self.hidden_layer_1 = self.sigmoid(np.dot(l0, self.synapses1) + self.activation_bias_layer1)
 			self.hidden_layer_2 = self.sigmoid(
